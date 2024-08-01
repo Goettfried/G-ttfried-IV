@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -12,7 +14,7 @@ class FormData(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
-    message = db.Column(db.Text, nullable=False)
+    message = db.Column(db.String(200), nullable=False)
     type = db.Column(db.String(50), nullable=False)
 
 @app.route('/')
@@ -27,9 +29,10 @@ def init_db():
 
 @app.route('/check_tables')
 def check_tables():
-    tables = db.engine.table_names()
+    inspector = db.inspect(db.engine)
+    tables = inspector.get_table_names()
     return f"Tables: {tables}"
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
 
