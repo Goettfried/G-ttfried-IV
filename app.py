@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for
+from flask import Flask, render_template, request, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import pandas as pd
@@ -20,7 +20,7 @@ class FormData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20), nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
     message = db.Column(db.Text, nullable=False)
     type = db.Column(db.String(50), nullable=False)
 
@@ -63,6 +63,24 @@ def export_data():
     
     output.seek(0)
     return send_file(output, download_name="data_export.xlsx", as_attachment=True)
+
+@app.route('/receive_form', methods=['POST'])
+def receive_form():
+    data = request.json
+    if not data:
+        return jsonify({'status': 'error', 'message': 'No data provided'}), 400
+    
+    form_data = FormData(
+        name=data.get('name'),
+        email=data.get('email'),
+        phone=data.get('phone'),
+        message=data.get('message'),
+        type=data.get('type')
+    )
+    db.session.add(form_data)
+    db.session.commit()
+    
+    return jsonify({'status': 'success', 'message': 'Form data received successfully'})
 
 if __name__ == '__main__':
     app.run(debug=True)
