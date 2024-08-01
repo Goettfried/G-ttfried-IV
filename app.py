@@ -22,7 +22,9 @@ class FormData(db.Model):
     message = db.Column(db.String(500))
     type = db.Column(db.String(50))
 
-db.create_all()
+# Créer la base de données
+with app.app_context():
+    db.create_all()
 
 # Route pour afficher les données des formulaires
 @app.route('/')
