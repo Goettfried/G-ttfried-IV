@@ -1,7 +1,0 @@
-.vscode/
-venv/
-*.pyc
-__pycache__/
-instance/
-migrations/
-.gitignore
