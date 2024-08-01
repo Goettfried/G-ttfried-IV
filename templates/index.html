@@ -3,46 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Data</title>
+    <title>Données des formulaires</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background-color: #f4f4f4;
         }
         h1 {
+            text-align: center;
             color: #333;
         }
-        .section {
-            margin-bottom: 30px;
+        .container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
         }
-        .form-entry {
-            margin-bottom: 10px;
+        .column {
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            width: 45%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .entry {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .entry:last-child {
+            border-bottom: none;
+        }
+        .entry h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #007BFF;
+        }
+        .entry p {
+            margin: 5px 0;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <h1>Données des formulaires</h1>
-    <div class="section">
-        <h2>Je recherche du travail</h2>
-        {% for entry in data["Je recherche du travail"] %}
-            <div class="form-entry">
-                <p><strong>Nom:</strong> {{ entry.name }}</p>
-                <p><strong>Email:</strong> {{ entry.email }}</p>
-                <p><strong>Numéro de téléphone:</strong> {{ entry.phone }}</p>
-                <p><strong>Message:</strong> {{ entry.message }}</p>
-            </div>
-        {% endfor %}
+    <div class="button-container">
+        <a href="/export_data" class="button">Exporter les données en Excel</a>
     </div>
-    <div class="section">
-        <h2>Je recherche du personnel</h2>
-        {% for entry in data["Je recherche du personnel"] %}
-            <div class="form-entry">
-                <p><strong>Nom:</strong> {{ entry.name }}</p>
-                <p><strong>Email:</strong> {{ entry.email }}</p>
-                <p><strong>Numéro de téléphone:</strong> {{ entry.phone }}</p>
-                <p><strong>Message:</strong> {{ entry.message }}</p>
+    <div class="container">
+        <div class="column">
+            <h2>Je recherche du travail</h2>
+            {% for entry in travail_data %}
+            <div class="entry">
+                <h2>Nom: {{ entry.name }}</h2>
+                <p>Email: {{ entry.email }}</p>
+                <p>Numéro de téléphone: {{ entry.phone }}</p>
+                <p>Message: {{ entry.message }}</p>
             </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
+        <div class="column">
+            <h2>Je recherche du personnel</h2>
+            {% for entry in personnel_data %}
+            <div class="entry">
+                <h2>Nom: {{ entry.name }}</h2>
+                <p>Email: {{ entry.email }}</p>
+                <p>Numéro de téléphone: {{ entry.phone }}</p>
+                <p>Message: {{ entry.message }}</p>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </body>
 </html>
