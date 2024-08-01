@@ -4,9 +4,15 @@ from io import BytesIO
 import pandas as pd
 import openpyxl
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
-db = SQLAlchemy(app)
+db = SQLAlchemy()
+
+def create_app():
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+    db.init_app(app)
+    return app
+
+app = create_app()
 
 class FormData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -15,10 +21,6 @@ class FormData(db.Model):
     phone = db.Column(db.String(20))
     message = db.Column(db.Text)
     type = db.Column(db.String(50))  # "Je recherche du travail" ou "Je recherche du personnel"
-
-def create_tables():
-    with app.app_context():
-        db.create_all()
 
 @app.route('/')
 def index():
@@ -62,6 +64,5 @@ def export_data():
     return send_file(output, attachment_filename="data.xlsx", as_attachment=True)
 
 if __name__ == "__main__":
-    create_tables()
     app.run(debug=True)
 
