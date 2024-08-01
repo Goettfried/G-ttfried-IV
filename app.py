@@ -16,9 +16,9 @@ class FormData(db.Model):
     message = db.Column(db.Text)
     type = db.Column(db.String(50))  # "Je recherche du travail" ou "Je recherche du personnel"
 
-@app.before_first_request
 def create_tables():
-    db.create_all()
+    with app.app_context():
+        db.create_all()
 
 @app.route('/')
 def index():
@@ -62,6 +62,6 @@ def export_data():
     return send_file(output, attachment_filename="data.xlsx", as_attachment=True)
 
 if __name__ == "__main__":
-    with app.app_context():
-        create_tables()
+    create_tables()
     app.run(debug=True)
+
