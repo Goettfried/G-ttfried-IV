@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for, jsonify
+from flask import Flask, render_template, request, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
@@ -22,7 +22,7 @@ class FormData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20), nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
     message = db.Column(db.Text, nullable=False)
     type = db.Column(db.String(50), nullable=False)
 
@@ -71,12 +71,12 @@ def receive_form():
     data = request.get_json()
     name = data.get('name')
     email = data.get('email')
-    phone = data.get('phone')
+    phone = data.get('phone')  # Optional
     message = data.get('message')
     form_type = data.get('type')
     
-    if not all([name, email, phone, message, form_type]):
-        return jsonify({"status": "error", "message": "All fields are required"}), 400
+    if not all([name, email, message, form_type]):
+        return jsonify({"status": "error", "message": "Name, Email, Message and Type are required fields"}), 400
 
     form_data = FormData(name=name, email=email, phone=phone, message=message, type=form_type)
     db.session.add(form_data)
