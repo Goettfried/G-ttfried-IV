@@ -1,26 +1,21 @@
 from flask import Flask, render_template, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
-import pandas as pd
 from io import BytesIO
+import pandas as pd
+import openpyxl
+import os
 
 app = Flask(__name__)
-CORS(app)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///formdata.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 db = SQLAlchemy(app)
 
 class FormData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(50))
     name = db.Column(db.String(100))
     email = db.Column(db.String(100))
     phone = db.Column(db.String(20))
     message = db.Column(db.Text)
-
-db.create_all()
+    type = db.Column(db.String(50))  # "Je recherche du travail" ou "Je recherche du personnel"
 
 @app.route('/')
 def index():
@@ -28,58 +23,46 @@ def index():
     personnel_data = FormData.query.filter_by(type="Je recherche du personnel").all()
     return render_template('index.html', travail_data=travail_data, personnel_data=personnel_data)
 
-@app.route('/receive_form', methods=['POST'])
-def receive_form():
+@app.route('/submit', methods=['POST'])
+def submit():
     data = request.get_json()
-    if not data:
-        return jsonify({"status": "error", "message": "No data received"}), 400
-    
-    new_data = FormData(
-        type=data.get('type'),
-        name=data.get('name'),
-        email=data.get('email'),
-        phone=data.get('phone'),
-        message=data.get('message')
-    )
-    
-    db.session.add(new_data)
+    name = data.get('name')
+    email = data.get('email')
+    phone = data.get('phone')
+    message = data.get('message')
+    form_type = data.get('type')
+
+    if not name or not email or not phone or not message or not form_type:
+        return jsonify({"status": "error", "message": "Tous les champs sont obligatoires."}), 400
+
+    form_data = FormData(name=name, email=email, phone=phone, message=message, type=form_type)
+    db.session.add(form_data)
     db.session.commit()
-    
-    return jsonify({"status": "success", "message": "Data received"}), 200
+    return jsonify({"status": "success", "message": "Données soumises avec succès!"})
 
 @app.route('/export_data')
 def export_data():
-    try:
+    with app.app_context():
         travail_data = FormData.query.filter_by(type="Je recherche du travail").all()
         personnel_data = FormData.query.filter_by(type="Je recherche du personnel").all()
 
-        travail_df = pd.DataFrame([{
-            'Name': d.name,
-            'Email': d.email,
-            'Phone': d.phone,
-            'Message': d.message
-        } for d in travail_data])
-
-        personnel_df = pd.DataFrame([{
-            'Name': d.name,
-            'Email': d.email,
-            'Phone': d.phone,
-            'Message': d.message
-        } for d in personnel_data])
+        travail_df = pd.DataFrame([(d.name, d.email, d.phone, d.message) for d in travail_data], 
+                                  columns=["Nom", "Email", "Numéro de téléphone", "Message"])
+        personnel_df = pd.DataFrame([(d.name, d.email, d.phone, d.message) for d in personnel_data], 
+                                    columns=["Nom", "Email", "Numéro de téléphone", "Message"])
 
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine='openpyxl')
-        
+
         travail_df.to_excel(writer, sheet_name='Travail', index=False)
         personnel_df.to_excel(writer, sheet_name='Personnel', index=False)
-        
-        writer.save()
+
+        writer.close()
         output.seek(0)
 
         return send_file(output, attachment_filename="form_data.xlsx", as_attachment=True)
-    except Exception as e:
-        print(f"Error during export: {e}")
-        return jsonify({"status": "error", "message": "Error during export"}), 500
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
