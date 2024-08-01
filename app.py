@@ -1,13 +1,11 @@
-import os
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import pandas as pd
 import io
 
 app = Flask(__name__)
-basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "instance", "app.db")}'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -29,7 +27,8 @@ def index():
 
 @app.route('/check_tables')
 def check_tables():
-    tables = db.engine.table_names()
+    from sqlalchemy import inspect
+    tables = inspect(db.engine).get_table_names()
     return f"Tables: {tables}"
 
 @app.route('/init_db')
