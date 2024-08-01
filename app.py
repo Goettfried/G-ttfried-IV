@@ -21,10 +21,11 @@ def index():
     stage_data = FormData.query.filter_by(type="Je recherche un stage").all()
     return render_template('index.html', travail_data=travail_data, stage_data=stage_data)
 
+@app.route('/init_db')
 def init_db():
     db.create_all()
+    return "Database initialized!"
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
 
