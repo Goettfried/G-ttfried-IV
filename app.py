@@ -1,6 +1,8 @@
-from flask import Flask, request, jsonify
+import os
 import smtplib
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
@@ -16,29 +18,38 @@ def receive_form():
     phone = data.get('phone')
     message = data.get('message')
 
-    # Process and store the data as needed
     print(f"Received data: {name}, {email}, {phone}, {message}")
 
-    try:
-        send_email(name, email, phone, message)
+    if send_email(name, email, phone, message):
         return jsonify({'status': 'success', 'message': 'Form data received and email sent'}), 200
-    except Exception as e:
-        print(f"Error sending email: {e}")
+    else:
         return jsonify({'status': 'error', 'message': 'Failed to send email'}), 500
 
 def send_email(name, email, phone, message):
-    sender_email = 'your_email@example.com'
-    receiver_email = 'receiver_email@example.com'
-    password = 'your_password'
+    try:
+        sender_email = os.environ.get('EMAIL_USER')
+        receiver_email = 'votre_email_de_réception@example.com'  # Remplacez par l'email du destinataire
+        password = os.environ.get('EMAIL_PASS')
 
-    msg = MIMEText(f"Name: {name}\nEmail: {email}\nPhone: {phone}\nMessage: {message}")
-    msg['Subject'] = 'New Form Submission'
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = receiver_email
+        msg['Subject'] = 'New Contact Form Submission'
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        body = f"Name: {name}\nEmail: {email}\nPhone: {phone}\nMessage: {message}"
+        msg.attach(MIMEText(body, 'plain'))
+
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
         server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, msg.as_string())
+        text = msg.as_string()
+        server.sendmail(sender_email, receiver_email, text)
+        server.quit()
+        print("Email envoyé avec succès")
+        return True
+    except Exception as e:
+        print(f"Erreur lors de l'envoi de l'email: {e}")
+        return False
 
 if __name__ == '__main__':
     app.run(debug=True)
