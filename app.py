@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
+import sqlite3
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///form_data.db'
@@ -25,6 +26,17 @@ def index():
 def init_db():
     db.create_all()
     return "Database initialized!"
+
+@app.route('/check_tables')
+def check_tables():
+    try:
+        conn = sqlite3.connect('form_data.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+        return f"Tables: {tables}"
+    except Exception as e:
+        return str(e)
 
 if __name__ == '__main__':
     app.run(debug=True)
