@@ -26,10 +26,6 @@ class FormData(db.Model):
     message = db.Column(db.Text)
     type = db.Column(db.String(50))  # "Je recherche du travail" ou "Je recherche du personnel"
 
-@app.before_first_request
-def initialize_database():
-    db.create_all()  # Assure que la base de données et les tables sont créées au démarrage
-
 @app.route('/')
 def index():
     travail_data = FormData.query.filter_by(type="Je recherche du travail").all()
