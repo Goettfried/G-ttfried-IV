@@ -1,8 +1,10 @@
-import os
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+# This is a forced update to trigger redeployment
+
 from flask import Flask, request, jsonify
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import os
 
 app = Flask(__name__)
 
@@ -18,27 +20,32 @@ def receive_form():
     phone = data.get('phone')
     message = data.get('message')
 
+    # Traitez et stockez les données comme nécessaire
     print(f"Received data: {name}, {email}, {phone}, {message}")
 
-    if send_email(name, email, phone, message):
-        return jsonify({'status': 'success', 'message': 'Form data received and email sent'}), 200
-    else:
+    try:
+        send_email(name, email, phone, message)
+        return jsonify({'status': 'success', 'message': 'Form data received'}), 200
+    except Exception as e:
+        print(f"Erreur lors de l'envoi de l'email: {e}")
         return jsonify({'status': 'error', 'message': 'Failed to send email'}), 500
 
 def send_email(name, email, phone, message):
+    sender_email = os.environ['EMAIL_USER']
+    password = os.environ['EMAIL_PASS']
+    receiver_email = "votre.email@exemple.com"
+
+    subject = "New Form Submission"
+    body = f"Name: {name}\nEmail: {email}\nPhone: {phone}\nMessage: {message}"
+
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
     try:
-        sender_email = os.environ.get('EMAIL_USER')
-        receiver_email = 'votre_email_de_réception@example.com'  # Remplacez par l'email du destinataire
-        password = os.environ.get('EMAIL_PASS')
-
-        msg = MIMEMultipart()
-        msg['From'] = sender_email
-        msg['To'] = receiver_email
-        msg['Subject'] = 'New Contact Form Submission'
-
-        body = f"Name: {name}\nEmail: {email}\nPhone: {phone}\nMessage: {message}"
-        msg.attach(MIMEText(body, 'plain'))
-
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
         server.login(sender_email, password)
@@ -46,10 +53,9 @@ def send_email(name, email, phone, message):
         server.sendmail(sender_email, receiver_email, text)
         server.quit()
         print("Email envoyé avec succès")
-        return True
     except Exception as e:
         print(f"Erreur lors de l'envoi de l'email: {e}")
-        return False
+        raise
 
 if __name__ == '__main__':
     app.run(debug=True)
