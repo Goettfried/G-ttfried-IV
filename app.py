@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from io import BytesIO
 import pandas as pd
 import openpyxl
-import os
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -16,6 +15,10 @@ class FormData(db.Model):
     phone = db.Column(db.String(20))
     message = db.Column(db.Text)
     type = db.Column(db.String(50))  # "Je recherche du travail" ou "Je recherche du personnel"
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 @app.route('/')
 def index():
@@ -38,31 +41,27 @@ def submit():
     form_data = FormData(name=name, email=email, phone=phone, message=message, type=form_type)
     db.session.add(form_data)
     db.session.commit()
-    return jsonify({"status": "success", "message": "Données soumises avec succès!"})
+    return jsonify({"status": "success", "message": "Données soumises avec succès."})
 
-@app.route('/export_data')
+@app.route('/export_data', methods=['GET'])
 def export_data():
+    travail_data = FormData.query.filter_by(type="Je recherche du travail").all()
+    personnel_data = FormData.query.filter_by(type="Je recherche du personnel").all()
+
+    travail_df = pd.DataFrame([(d.name, d.email, d.phone, d.message) for d in travail_data],
+                              columns=["Nom", "Email", "Numéro de téléphone", "Message"])
+    personnel_df = pd.DataFrame([(d.name, d.email, d.phone, d.message) for d in personnel_data],
+                                columns=["Nom", "Email", "Numéro de téléphone", "Message"])
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        travail_df.to_excel(writer, index=False, sheet_name='Travail')
+        personnel_df.to_excel(writer, index=False, sheet_name='Personnel')
+
+    output.seek(0)
+    return send_file(output, attachment_filename="data.xlsx", as_attachment=True)
+
+if __name__ == "__main__":
     with app.app_context():
-        travail_data = FormData.query.filter_by(type="Je recherche du travail").all()
-        personnel_data = FormData.query.filter_by(type="Je recherche du personnel").all()
-
-        travail_df = pd.DataFrame([(d.name, d.email, d.phone, d.message) for d in travail_data], 
-                                  columns=["Nom", "Email", "Numéro de téléphone", "Message"])
-        personnel_df = pd.DataFrame([(d.name, d.email, d.phone, d.message) for d in personnel_data], 
-                                    columns=["Nom", "Email", "Numéro de téléphone", "Message"])
-
-        output = BytesIO()
-        writer = pd.ExcelWriter(output, engine='openpyxl')
-
-        travail_df.to_excel(writer, sheet_name='Travail', index=False)
-        personnel_df.to_excel(writer, sheet_name='Personnel', index=False)
-
-        writer.close()
-        output.seek(0)
-
-        return send_file(output, attachment_filename="form_data.xlsx", as_attachment=True)
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
+        create_tables()
     app.run(debug=True)
