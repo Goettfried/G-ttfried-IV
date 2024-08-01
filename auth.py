@@ -1,11 +1,11 @@
-# Modification
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 auth = HTTPBasicAuth()
 
 users = {
-    "Nicolas": generate_password_hash("Goetzinger")
+    os.environ.get('USERNAME'): generate_password_hash(os.environ.get('PASSWORD'))
 }
 
 @auth.verify_password
