@@ -1,91 +1,58 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
-from functools import wraps
+from flask import Flask, render_template, request, redirect, url_for, send_file
 import pandas as pd
 from io import BytesIO
 from auth import auth
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), nullable=False, unique=True)
-    password = db.Column(db.String(150), nullable=False)
-
-class FormData(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
-    email = db.Column(db.String(150), nullable=False)
-    phone = db.Column(db.String(20), nullable=True)
-    message = db.Column(db.Text, nullable=False)
-    type = db.Column(db.String(50), nullable=False)
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'logged_in' not in session:
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+# Routes de l'application
+@app.route('/')
+def home():
+    return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        if auth.verify_password(username, password):
-            session['logged_in'] = True
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if auth.authenticate(username, password):
             return redirect(url_for('index'))
         else:
-            flash('Invalid credentials')
+            return "Invalid credentials", 401
     return render_template('login.html')
 
-@app.route('/logout')
-@login_required
-def logout():
-    session.pop('logged_in', None)
-    return redirect(url_for('login'))
-
-@app.route('/')
-@login_required
+@app.route('/index')
+@auth.login_required
 def index():
-    travail_data = FormData.query.filter_by(type="Je recherche du travail").all()
-    personnel_data = FormData.query.filter_by(type="Je recherche du personnel").all()
-    return render_template('index.html', travail_data=travail_data, personnel_data=personnel_data)
+    return render_template('index.html')
 
 @app.route('/receive_form', methods=['POST'])
 def receive_form():
     data = request.get_json()
-    new_entry = FormData(
-        name=data['name'],
-        email=data['email'],
-        phone=data.get('phone', ''),
-        message=data['message'],
-        type=data['type']
-    )
-    db.session.add(new_entry)
-    db.session.commit()
+    if data.get('type') == 'Je-recherche-du-travail':
+        save_data('travail', data)
+    elif data.get('type') == 'Je-recherche-du-personnel':
+        save_data('personnel', data)
     return {"status": "success", "message": "Form data received successfully"}
 
+def save_data(category, data):
+    # Logique pour sauvegarder les données dans la base de données ou fichier Excel
+    pass
+
 @app.route('/export_data')
-@login_required
+@auth.login_required
 def export_data():
-    travail_data = FormData.query.filter_by(type="Je recherche du travail").all()
-    personnel_data = FormData.query.filter_by(type="Je recherche du personnel").all()
-
-    travail_df = pd.DataFrame([(d.name, d.email, d.phone, d.message) for d in travail_data], columns=["Name", "Email", "Phone", "Message"])
-    personnel_df = pd.DataFrame([(d.name, d.email, d.phone, d.message) for d in personnel_data], columns=["Name", "Email", "Phone", "Message"])
-
     output = BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    
+    # Charger les données depuis la base de données ou les fichiers
+    travail_df = pd.DataFrame()  # Remplacez par le chargement réel des données
+    personnel_df = pd.DataFrame()  # Remplacez par le chargement réel des données
+
     travail_df.to_excel(writer, sheet_name='Travail', index=False)
     personnel_df.to_excel(writer, sheet_name='Personnel', index=False)
+
     writer.save()
     output.seek(0)
 
