@@ -25,7 +25,8 @@ def index():
 
 @app.route('/init_db')
 def init_db():
-    db.create_all()
+    db.drop_all()  # Supprimer toutes les tables existantes
+    db.create_all()  # Créer toutes les tables
     return "Database initialized!"
 
 @app.route('/check_tables')
