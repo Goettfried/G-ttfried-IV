@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import pandas as pd
 from io import BytesIO
+from auth import auth
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
@@ -38,8 +39,7 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
+        if auth.verify_password(username, password):
             session['logged_in'] = True
             return redirect(url_for('index'))
         else:
@@ -55,5 +55,41 @@ def logout():
 @app.route('/')
 @login_required
 def index():
-    travail_data = FormData.query.filter_
+    travail_data = FormData.query.filter_by(type="Je recherche du travail").all()
+    personnel_data = FormData.query.filter_by(type="Je recherche du personnel").all()
+    return render_template('index.html', travail_data=travail_data, personnel_data=personnel_data)
 
+@app.route('/receive_form', methods=['POST'])
+def receive_form():
+    data = request.get_json()
+    new_entry = FormData(
+        name=data['name'],
+        email=data['email'],
+        phone=data.get('phone', ''),
+        message=data['message'],
+        type=data['type']
+    )
+    db.session.add(new_entry)
+    db.session.commit()
+    return {"status": "success", "message": "Form data received successfully"}
+
+@app.route('/export_data')
+@login_required
+def export_data():
+    travail_data = FormData.query.filter_by(type="Je recherche du travail").all()
+    personnel_data = FormData.query.filter_by(type="Je recherche du personnel").all()
+
+    travail_df = pd.DataFrame([(d.name, d.email, d.phone, d.message) for d in travail_data], columns=["Name", "Email", "Phone", "Message"])
+    personnel_df = pd.DataFrame([(d.name, d.email, d.phone, d.message) for d in personnel_data], columns=["Name", "Email", "Phone", "Message"])
+
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    travail_df.to_excel(writer, sheet_name='Travail', index=False)
+    personnel_df.to_excel(writer, sheet_name='Personnel', index=False)
+    writer.save()
+    output.seek(0)
+
+    return send_file(output, attachment_filename="data_export.xlsx", as_attachment=True)
+
+if __name__ == '__main__':
+    app.run(debug=True)
