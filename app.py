@@ -6,7 +6,6 @@ from auth import auth
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 
-# Routes de l'application
 @app.route('/')
 def home():
     return redirect(url_for('login'))
@@ -16,7 +15,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        if auth.authenticate(username, password):
+        if auth.verify_password(username, password):
             return redirect(url_for('index'))
         else:
             return "Invalid credentials", 401
