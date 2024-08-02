@@ -6,13 +6,15 @@
     <title>Login</title>
 </head>
 <body>
-    <h1>Login</h1>
     <form action="/login" method="post">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br>
-        <button type="submit">Login</button>
+        <label for="username">Nom d'utilisateur:</label>
+        <input type="text" id="username" name="username"><br>
+        <label for="password">Mot de passe:</label>
+        <input type="password" id="password" name="password"><br>
+        <input type="submit" value="Se connecter">
     </form>
+    {% if session.username %}
+    <a href="{{ url_for('logout') }}">Se déconnecter</a>
+    {% endif %}
 </body>
 </html>
