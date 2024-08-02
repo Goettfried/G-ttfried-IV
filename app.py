@@ -5,16 +5,20 @@ from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bf55b6617cb416f62fb5c63c6b874cfd'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
+
+# Utilisation d'un chemin absolu pour la base de données
+basedir = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(basedir, 'instance', 'app.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# S'assurer que le répertoire de la base de données existe
+os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# Ensure the database directory exists
-os.makedirs(os.path.join(app.instance_path), exist_ok=True)
-
-# Define your models here
+# Définir vos modèles ici
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), nullable=False, unique=True)
@@ -43,7 +47,7 @@ def login():
             session['username'] = user.username
             return redirect(url_for('index'))
         else:
-            flash('Invalid credentials')
+            flash('Identifiants invalides')
     return render_template('login.html')
 
 @app.route('/logout')
@@ -53,8 +57,8 @@ def logout():
 
 @app.route('/export_data')
 def export_data():
-    # Logic to export data
-    return "Exporting data"
+    # Logique pour exporter les données
+    return "Exportation des données"
 
 if __name__ == '__main__':
     app.run()
