@@ -6,18 +6,28 @@
 </head>
 <body>
     <h1>Form Data</h1>
-    <h2>Je recherche du travail</h2>
-    <ul>
-    {% for entry in data_travail %}
-        <li>{{ entry.name }} - {{ entry.email }} - {{ entry.message }}</li>
-    {% endfor %}
-    </ul>
-
-    <h2>Je recherche du personnel</h2>
-    <ul>
-    {% for entry in data_personnel %}
-        <li>{{ entry.name }} - {{ entry.email }} - {{ entry.message }}</li>
-    {% endfor %}
-    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Message</th>
+                <th>Form Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in form_data %}
+                <tr>
+                    <td>{{ data.name }}</td>
+                    <td>{{ data.email }}</td>
+                    <td>{{ data.phone }}</td>
+                    <td>{{ data.message }}</td>
+                    <td>{{ data.form_type }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('export_data') }}">Export Data to Excel</a>
 </body>
 </html>
