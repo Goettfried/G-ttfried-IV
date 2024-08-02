@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Data</title>
+</head>
+<body>
+    <h1>Form Data</h1>
+    <h2>Je recherche du travail</h2>
+    <ul>
+    {% for entry in data_travail %}
+        <li>{{ entry.name }} - {{ entry.email }} - {{ entry.message }}</li>
+    {% endfor %}
+    </ul>
+
+    <h2>Je recherche du personnel</h2>
+    <ul>
+    {% for entry in data_personnel %}
+        <li>{{ entry.name }} - {{ entry.email }} - {{ entry.message }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
