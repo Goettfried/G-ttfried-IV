@@ -66,19 +66,24 @@ def protected():
 
 @app.route('/receive_form', methods=['POST'])
 def receive_form():
-    data = request.get_json()
-    if data:
-        form_data = FormData(
-            name=data.get('name'),
-            email=data.get('email'),
-            phone=data.get('phone'),
-            message=data.get('message'),
-            submission_type=data.get('form_type')
-        )
-        db.session.add(form_data)
-        db.session.commit()
-        return jsonify({'status': 'success'})
-    return jsonify({'status': 'error', 'message': 'Invalid data'}), 400
+    try:
+        data = request.get_json()
+        app.logger.error(f"Received data: {data}")  # Ajout de log pour capturer les données reçues
+        if data:
+            form_data = FormData(
+                name=data.get('name'),
+                email=data.get('email'),
+                phone=data.get('phone'),
+                message=data.get('message'),
+                submission_type=data.get('form_type')
+            )
+            db.session.add(form_data)
+            db.session.commit()
+            return jsonify({'status': 'success'})
+        return jsonify({'status': 'error', 'message': 'Invalid data'}), 400
+    except Exception as e:
+        app.logger.error(f"Database error: {e}")  # Ajout de log pour capturer les erreurs de la base de données
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/view_data')
 def view_data():
