@@ -29,7 +29,7 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if auth.verify_password(username, password):
+        if username in users and check_password_hash(users.get(username), password):
             session['username'] = username
             return redirect(url_for('protected'))
         else:
