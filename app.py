@@ -1,26 +1,29 @@
 import os
-from flask import Flask, render_template, redirect, url_for, request, session
+from flask import Flask, render_template, redirect, url_for, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
-
-# Configure the database URI
-basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance/app.db')
-
-# Ensure instance directory exists
-if not os.path.exists(os.path.join(basedir, 'instance')):
-    os.makedirs(os.path.join(basedir, 'instance'))
+app.config['SECRET_KEY'] = 'votre_cle_secrete'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/41765/Desktop/Göttfried IV/app.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+# Définissez vos modèles ici
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), nullable=False, unique=True)
+    password = db.Column(db.String(150), nullable=False)
 
 class FormData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80))
-    email = db.Column(db.String(120))
-    type = db.Column(db.String(120))
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
 
+# Routes
 @app.route('/')
 def index():
     travail_data = FormData.query.filter_by(type="Je recherche du travail").all()
@@ -32,11 +35,12 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username == 'Nicolas' and password == 'your_password':
-            session['username'] = username
+        user = User.query.filter_by(username=username).first()
+        if user and user.password == password:
+            session['username'] = user.username
             return redirect(url_for('index'))
         else:
-            return render_template('login.html', error='Invalid credentials')
+            flash('Invalid credentials')
     return render_template('login.html')
 
 @app.route('/logout')
@@ -44,17 +48,10 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
-@app.route('/receive_form', methods=['POST'])
-def receive_form():
-    data = request.get_json()
-    form_data = FormData(name=data.get('name'), email=data.get('email'), type=data.get('type'))
-    db.session.add(form_data)
-    db.session.commit()
-    return {'status': 'success'}
-
 @app.route('/export_data')
 def export_data():
-    return "Exporting data..."
+    # Logique pour exporter les données
+    return "Exportation des données"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
