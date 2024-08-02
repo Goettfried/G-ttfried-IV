@@ -1,4 +1,3 @@
-# Maureen
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -7,9 +6,10 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key')
-# Utilisation de DATABASE_URI
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI', 'sqlite:///C:/Users/41765/Desktop/Göttfried IV/instance/app.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///C:/Users/41765/Desktop/Göttfried IV/instance/app.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+app.logger.debug(f"SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
