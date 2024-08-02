@@ -5,7 +5,7 @@ import os
 auth = HTTPBasicAuth()
 
 users = {
-    os.environ.get('USERNAME'): generate_password_hash(os.environ.get('PASSWORD'))
+    os.environ['USERNAME']: generate_password_hash(os.environ['PASSWORD'])
 }
 
 @auth.verify_password

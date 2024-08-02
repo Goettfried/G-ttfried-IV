@@ -4,7 +4,7 @@ from auth import auth
 import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'bf55b6617cb416f62fb5c63c6b874cfd')  # Clé secrète ajoutée directement
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 
 @app.route('/')
 def index():
