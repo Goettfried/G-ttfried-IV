@@ -6,16 +6,15 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///C:/Users/41765/Desktop/Göttfried IV/instance/app.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///instance/app.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Log SQLALCHEMY_DATABASE_URI for debugging
 app.logger.debug(f"SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
-
-# ... (le reste du code est inchangé)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
