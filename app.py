@@ -3,7 +3,7 @@ from flask import Flask, render_template, redirect, url_for, request, session, f
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-app = Flask(__name__)
+app = Flask("https://welshapp.onrender.com")
 app.config['SECRET_KEY'] = 'votre_cle_secrete'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/41765/Desktop/Göttfried IV/instance/app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
