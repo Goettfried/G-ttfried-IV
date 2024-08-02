@@ -3,15 +3,18 @@ from flask import Flask, render_template, redirect, url_for, request, session, f
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-app = Flask('https://welshapp.onrender.com')
+app = Flask(__name__)
 app.config['SECRET_KEY'] = 'bf55b6617cb416f62fb5c63c6b874cfd'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/41765/Desktop/Göttfried IV/instance/app.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-# Définissez vos modèles ici
+# Ensure the database directory exists
+os.makedirs(os.path.join(app.instance_path), exist_ok=True)
+
+# Define your models here
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), nullable=False, unique=True)
@@ -50,8 +53,8 @@ def logout():
 
 @app.route('/export_data')
 def export_data():
-    # Logique pour exporter les données
-    return "Exportation des données"
+    # Logic to export data
+    return "Exporting data"
 
 if __name__ == '__main__':
     app.run()
