@@ -1,10 +1,41 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Protected</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protected Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h2>Logged in successfully</h2>
-    <a href="{{ url_for('logout') }}">Se déconnecter</a>
+    <div class="container">
+        <h1>Données des formulaires</h1>
+        <button onclick="window.location.href='{{ url_for('export_data') }}'" class="btn btn-primary">Exporter les données en Excel</button>
+        <button id="logoutButton" class="btn btn-secondary">Déconnexion</button>
+        <div class="card-container">
+            <div class="card">
+                <h2>Je recherche du travail</h2>
+                <ul id="travail-list">
+                    <!-- Contenu généré par Flask -->
+                    {% for data in travail_data %}
+                        <li>{{ data.name }} - {{ data.email }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Je recherche du personnel</h2>
+                <ul id="personnel-list">
+                    <!-- Contenu généré par Flask -->
+                    {% for data in personnel_data %}
+                        <li>{{ data.name }} - {{ data.email }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("logoutButton").addEventListener("click", function() {
+            window.location.href = "{{ url_for('logout') }}";
+        });
+    </script>
 </body>
 </html>
