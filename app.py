@@ -35,7 +35,10 @@ def logout():
 @app.route('/protected')
 def protected():
     if 'username' in session:
-        return 'Logged in successfully'
+        return '''
+            Logged in successfully
+            <br><a href="{{ url_for('logout') }}">Se déconnecter</a>
+        '''
     return redirect(url_for('login'))
 
 if __name__ == '__main__':

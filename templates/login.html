@@ -1,19 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
 </head>
 <body>
-    <form action="/login" method="post">
+    <h1>Login</h1>
+    <form method="post" action="{{ url_for('login') }}">
         <label for="username">Nom d'utilisateur:</label>
-        <input type="text" id="username" name="username"><br>
+        <input type="text" id="username" name="username"><br><br>
         <label for="password">Mot de passe:</label>
-        <input type="password" id="password" name="password"><br>
+        <input type="password" id="password" name="password"><br><br>
         <input type="submit" value="Se connecter">
     </form>
-    {% if session.username %}
+    {% if 'username' in session %}
     <a href="{{ url_for('logout') }}">Se déconnecter</a>
     {% endif %}
 </body>
