@@ -9,15 +9,10 @@
     <h1>Login</h1>
     <form action="/login" method="post">
         <label for="username">Username:</label>
-        <input type="text" id="username" name="username"><br><br>
+        <input type="text" id="username" name="username" required><br>
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password"><br><br>
-        <input type="submit" value="Login">
+        <input type="password" id="password" name="password" required><br>
+        <button type="submit">Login</button>
     </form>
-
-    {% if success_message %}
-    <p>{{ success_message }}</p>
-    <a href="/">Go to Home</a>
-    {% endif %}
 </body>
 </html>
