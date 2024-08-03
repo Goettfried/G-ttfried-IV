@@ -54,5 +54,27 @@
     <a href="{{ url_for('export_data') }}">Export Data to Excel</a>
     <br>
     <a href="{{ url_for('logout') }}">Logout</a>
+
+    <h2>Données Soumises</h2>
+    <table border="1">
+        <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Numéro de téléphone</th>
+            <th>Message</th>
+            <th>Type de soumission</th>
+            <th>Date de soumission</th>
+        </tr>
+        {% for data in form_data %}
+        <tr>
+            <td>{{ data.name }}</td>
+            <td>{{ data.email }}</td>
+            <td>{{ data.phone }}</td>
+            <td>{{ data.message }}</td>
+            <td>{{ data.submission_type }}</td>
+            <td>{{ data.submission_date }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
