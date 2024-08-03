@@ -3,47 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Submission</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Form Data</title>
 </head>
 <body>
-    <h1>Form Submission</h1>
-    <form id="myForm">
-        <input type="text" name="name" placeholder="Name" required><br>
-        <input type="email" name="email" placeholder="Email" required><br>
-        <input type="text" name="phone" placeholder="Phone"><br>
-        <textarea name="message" placeholder="Message" required></textarea><br>
-        <input type="hidden" name="form_type" value="contact">
-        <button type="submit">Submit</button>
-    </form>
-
-    <script>
-        $(document).ready(function() {
-            $('#myForm').on('submit', function(event) {
-                event.preventDefault(); // Empêche le rechargement de la page
-
-                var formData = {
-                    name: $('input[name=name]').val(),
-                    email: $('input[name=email]').val(),
-                    phone: $('input[name=phone]').val(),
-                    message: $('textarea[name=message]').val(),
-                    form_type: $('input[name=form_type]').val()
-                };
-
-                $.ajax({
-                    type: 'POST',
-                    url: '/receive_form',
-                    data: JSON.stringify(formData),
-                    contentType: 'application/json',
-                    success: function(response) {
-                        alert('Form submitted successfully!');
-                    },
-                    error: function(xhr, status, error) {
-                        alert('Failed to submit form: ' + xhr.responseText);
-                    }
-                });
-            });
-        });
-    </script>
+    <h1>Form Data</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Message</th>
+                <th>Submission Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in form_data %}
+            <tr>
+                <td>{{ data.name }}</td>
+                <td>{{ data.email }}</td>
+                <td>{{ data.phone }}</td>
+                <td>{{ data.message }}</td>
+                <td>{{ data.submission_type }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <a href="{{ url_for('export_data') }}">Export Data to Excel</a>
+    <br>
+    <a href="{{ url_for('logout') }}">Logout</a>
 </body>
 </html>

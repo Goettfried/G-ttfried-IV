@@ -1,12 +1,14 @@
-# Bwana
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_bcrypt import Bcrypt 
-from flask_cors import CORS  # Ajoutez cette ligne
+from flask_bcrypt import Bcrypt
+from flask_cors import CORS
 import os
+import pandas as pd
+import io
 
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI') or 'postgresql://oesterreich:T48R0JhMHfLRQj3i86Tv3810txboBkOI@dpg-cqmn0so8fa8c73afbo0g-a.oregon-postgres.render.com/bayern'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -18,7 +20,7 @@ bcrypt = Bcrypt(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)  # Augmentez la longueur ici
+    password_hash = db.Column(db.String(255), nullable=False)
 
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -55,7 +57,8 @@ def logout():
 @app.route('/')
 def index():
     if 'username' in session:
-        return render_template('index.html', username=session['username'])
+        form_data = FormData.query.order_by(FormData.submission_type).all()
+        return render_template('index.html', form_data=form_data)
     return redirect(url_for('login'))
 
 @app.route('/protected')
@@ -89,8 +92,23 @@ def view_data():
 
 @app.route('/export_data')
 def export_data():
-    # Logic to export data to Excel
-    pass
+    if 'username' in session:
+        form_data = FormData.query.all()
+        data = [{
+            'Name': f.name,
+            'Email': f.email,
+            'Phone': f.phone,
+            'Message': f.message,
+            'Submission Type': f.submission_type
+        } for f in form_data]
+        df = pd.DataFrame(data)
+        output = io.BytesIO()
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+        df.to_excel(writer, index=False, sheet_name='FormData')
+        writer.save()
+        output.seek(0)
+        return send_file(output, attachment_filename='form_data.xlsx', as_attachment=True)
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)
