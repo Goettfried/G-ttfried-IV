@@ -108,9 +108,9 @@ def export_data():
         output = io.BytesIO()
         writer = pd.ExcelWriter(output, engine='xlsxwriter')
         df.to_excel(writer, index=False, sheet_name='FormData')
-        writer.save()
+        writer.close()
         output.seek(0)
-        return send_file(output, attachment_filename='form_data.xlsx', as_attachment=True)
+        return send_file(output, download_name='form_data.xlsx', as_attachment=True)
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
