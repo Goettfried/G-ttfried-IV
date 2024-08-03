@@ -71,12 +71,16 @@ def protected():
 def receive_form():
     data = request.get_json()
     if data:
+        submission_type = data.get('submission_type')
+        if submission_type is None:
+            return jsonify({'status': 'error', 'message': 'Submission type is required'}), 400
+
         form_data = FormData(
             name=data.get('name'),
             email=data.get('email'),
             phone=data.get('phone'),
             message=data.get('message'),
-            submission_type=data.get('submission_type')
+            submission_type=submission_type
         )
         db.session.add(form_data)
         db.session.commit()
