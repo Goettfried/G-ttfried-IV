@@ -1,12 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_cors import CORS
 from datetime import datetime
 import pandas as pd
 import io
 import xlsxwriter
 
 app = Flask(__name__)
+CORS(app)  # Ajoute cette ligne pour permettre les requêtes CORS
 app.secret_key = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://oesterreich:T48R0JhMHfLRQj3i86Tv3810txboBkOI@dpg-cqmn0so8fa8c73afbo0g-a:5432/bayern'
 db = SQLAlchemy(app)
