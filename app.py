@@ -6,11 +6,8 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///instance/app.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI') or 'postgresql://oesterreich:T48R0JhMHfLRQj3i86Tv3810txboBkOI@dpg-cqmn0so8fa8c73afbo0g-a.oregon-postgres.render.com/bayern'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Log SQLALCHEMY_DATABASE_URI for debugging
-app.logger.debug(f"SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -38,19 +35,14 @@ class FormData(db.Model):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        try:
-            username = request.form['username']
-            password = request.form['password']
-            app.logger.debug(f"Trying to log in with username: {username}")
-            user = User.query.filter_by(username=username).first()
-            if user and user.check_password(password):
-                session['username'] = user.username
-                return redirect(url_for('index'))
-            else:
-                return 'Invalid username or password'
-        except Exception as e:
-            app.logger.error(f"Error during login: {e}")
-            return 'Internal Server Error', 500
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            session['username'] = user.username
+            return redirect(url_for('index'))
+        else:
+            return 'Invalid username or password'
     return render_template('login.html')
 
 @app.route('/logout')
@@ -72,24 +64,19 @@ def protected():
 
 @app.route('/receive_form', methods=['POST'])
 def receive_form():
-    try:
-        data = request.get_json()
-        app.logger.debug(f"Received data: {data}")
-        if data:
-            form_data = FormData(
-                name=data.get('name'),
-                email=data.get('email'),
-                phone=data.get('phone'),
-                message=data.get('message'),
-                submission_type=data.get('form_type')
-            )
-            db.session.add(form_data)
-            db.session.commit()
-            return jsonify({'status': 'success'})
-        return jsonify({'status': 'error', 'message': 'Invalid data'}), 400
-    except Exception as e:
-        app.logger.error(f"Database error: {e}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+    data = request.get_json()
+    if data:
+        form_data = FormData(
+            name=data.get('name'),
+            email=data.get('email'),
+            phone=data.get('phone'),
+            message=data.get('message'),
+            submission_type=data.get('form_type')
+        )
+        db.session.add(form_data)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    return jsonify({'status': 'error', 'message': 'Invalid data'}), 400
 
 @app.route('/view_data')
 def view_data():
@@ -100,8 +87,8 @@ def view_data():
 
 @app.route('/export_data')
 def export_data():
+    # Logic to export data to Excel
     pass
 
 if __name__ == '__main__':
     app.run(debug=True)
-
