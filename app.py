@@ -63,12 +63,6 @@ def index():
         return render_template('index.html', form_data=form_data)
     return redirect(url_for('login'))
 
-@app.route('/protected')
-def protected():
-    if 'username' in session:
-        return render_template('protected.html', username=session['username'])
-    return redirect(url_for('login'))
-
 @app.route('/receive_form', methods=['POST'])
 def receive_form():
     data = request.get_json()
@@ -88,13 +82,6 @@ def receive_form():
         db.session.commit()
         return jsonify({'status': 'success'})
     return jsonify({'status': 'error', 'message': 'Invalid data'}), 400
-
-@app.route('/view_data')
-def view_data():
-    if 'username' in session:
-        form_data = FormData.query.all()
-        return render_template('view_data.html', form_data=form_data)
-    return redirect(url_for('login'))
 
 @app.route('/export_data')
 def export_data():
