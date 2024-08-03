@@ -6,6 +6,7 @@ from flask_cors import CORS
 import os
 import pandas as pd
 import io
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -35,6 +36,7 @@ class FormData(db.Model):
     phone = db.Column(db.String(50), nullable=True)
     message = db.Column(db.Text, nullable=False)
     submission_type = db.Column(db.String(50), nullable=False)
+    submission_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -57,7 +59,7 @@ def logout():
 @app.route('/')
 def index():
     if 'username' in session:
-        form_data = FormData.query.order_by(FormData.submission_type).all()
+        form_data = FormData.query.order_by(FormData.submission_date.desc()).all()
         return render_template('index.html', form_data=form_data)
     return redirect(url_for('login'))
 
@@ -103,7 +105,8 @@ def export_data():
             'Email': f.email,
             'Phone': f.phone,
             'Message': f.message,
-            'Submission Type': f.submission_type
+            'Submission Type': f.submission_type,
+            'Submission Date': f.submission_date
         } for f in form_data]
         df = pd.DataFrame(data)
         output = io.BytesIO()
