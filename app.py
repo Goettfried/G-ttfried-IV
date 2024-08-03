@@ -49,7 +49,7 @@ def receive_form():
     email = data.get('email')
     phone = data.get('phone')
     message = data.get('message')
-    submission_type = data.get('submission_type')
+    submission_type = data.get('form_type')  # Assurez-vous que ce champ est bien envoyé
 
     if not submission_type:
         return jsonify({'error': 'Submission type is required'}), 400
