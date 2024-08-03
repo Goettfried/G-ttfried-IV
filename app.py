@@ -73,6 +73,7 @@ def receive_form():
     data = request.get_json()
     if data:
         form_data = FormData(
+            form_type=data.get('form_type'),
             name=data.get('name'),
             email=data.get('email'),
             phone=data.get('phone'),
@@ -100,7 +101,8 @@ def export_data():
             'Email': f.email,
             'Phone': f.phone,
             'Message': f.message,
-            'Submission Type': f.submission_type
+            'Submission Type': f.submission_type,
+            'Form Type': f.form_type
         } for f in form_data]
         df = pd.DataFrame(data)
         output = io.BytesIO()
