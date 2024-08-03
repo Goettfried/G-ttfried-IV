@@ -1,108 +1,99 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for, session, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_bcrypt import Bcrypt
-from flask_cors import CORS
-import os
+from datetime import datetime
 import pandas as pd
 import io
-from datetime import datetime
+import xlsxwriter
 
 app = Flask(__name__)
-CORS(app)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI') or 'postgresql://oesterreich:T48R0JhMHfLRQj3i86Tv3810txboBkOI@dpg-cqmn0so8fa8c73afbo0g-a.oregon-postgres.render.com/bayern'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+app.secret_key = 'your_secret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost/yourdatabase'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-bcrypt = Bcrypt(app)
-
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-
-    def set_password(self, password):
-        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
-   
-    def check_password(self, password):
-        return bcrypt.check_password_hash(self.password_hash, password)
 
 class FormData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
-    email = db.Column(db.String(150), nullable=False)
-    phone = db.Column(db.String(50), nullable=True)
-    message = db.Column(db.Text, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
+    message = db.Column(db.String(200), nullable=False)
     submission_type = db.Column(db.String(50), nullable=False)
-    submission_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    submission_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+@app.route('/')
+def index():
+    if 'loggedin' in session:
+        form_data = FormData.query.order_by(FormData.submission_date.desc()).all()
+        return render_template('index.html', form_data=form_data)
+    return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
-            session['username'] = user.username
-            return redirect(url_for('index'))
-        else:
-            return 'Invalid username or password'
+        session['loggedin'] = True
+        return redirect(url_for('index'))
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
-    session.pop('username', None)
-    return redirect(url_for('login'))
-
-@app.route('/')
-def index():
-    if 'username' in session:
-        form_data = FormData.query.order_by(FormData.submission_date.desc()).all()
-        return render_template('index.html', form_data=form_data)
+    session.pop('loggedin', None)
     return redirect(url_for('login'))
 
 @app.route('/receive_form', methods=['POST'])
 def receive_form():
     data = request.get_json()
-    if data:
-        submission_type = data.get('submission_type')
-        if submission_type is None:
-            return jsonify({'status': 'error', 'message': 'Submission type is required'}), 400
+    name = data.get('name')
+    email = data.get('email')
+    phone = data.get('phone')
+    message = data.get('message')
+    submission_type = data.get('submission_type')
 
-        form_data = FormData(
-            name=data.get('name'),
-            email=data.get('email'),
-            phone=data.get('phone'),
-            message=data.get('message'),
-            submission_type=submission_type
-        )
-        db.session.add(form_data)
-        db.session.commit()
-        return jsonify({'status': 'success'})
-    return jsonify({'status': 'error', 'message': 'Invalid data'}), 400
+    if not submission_type:
+        return jsonify({'error': 'Submission type is required'}), 400
+
+    form_data = FormData(
+        name=name,
+        email=email,
+        phone=phone,
+        message=message,
+        submission_type=submission_type,
+        submission_date=datetime.utcnow()
+    )
+    db.session.add(form_data)
+    db.session.commit()
+    return jsonify({'message': 'Form data received successfully'}), 200
 
 @app.route('/export_data')
 def export_data():
-    if 'username' in session:
-        form_data = FormData.query.all()
-        data = [{
-            'Name': f.name,
-            'Email': f.email,
-            'Phone': f.phone,
-            'Message': f.message,
-            'Submission Type': f.submission_type,
-            'Submission Date': f.submission_date
-        } for f in form_data]
-        df = pd.DataFrame(data)
-        output = io.BytesIO()
-        writer = pd.ExcelWriter(output, engine='xlsxwriter')
-        df.to_excel(writer, index=False, sheet_name='FormData')
-        writer.close()
-        output.seek(0)
-        return send_file(output, download_name='form_data.xlsx', as_attachment=True)
-    return redirect(url_for('login'))
+    form_data = FormData.query.all()
+    output = io.BytesIO()
+    workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+    worksheet = workbook.add_worksheet()
+
+    # Write headers
+    worksheet.write('A1', 'Nom')
+    worksheet.write('B1', 'Email')
+    worksheet.write('C1', 'Numéro de téléphone')
+    worksheet.write('D1', 'Message')
+    worksheet.write('E1', 'Type de soumission')
+    worksheet.write('F1', 'Date de soumission')
+
+    # Write data
+    row = 1
+    for data in form_data:
+        worksheet.write(row, 0, data.name)
+        worksheet.write(row, 1, data.email)
+        worksheet.write(row, 2, data.phone)
+        worksheet.write(row, 3, data.message)
+        worksheet.write(row, 4, data.submission_type)
+        worksheet.write(row, 5, data.submission_date.strftime('%Y-%m-%d %H:%M:%S'))
+        row += 1
+
+    workbook.close()
+    output.seek(0)
+
+    return send_file(output, attachment_filename='form_data.xlsx', as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)

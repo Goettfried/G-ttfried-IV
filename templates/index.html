@@ -3,34 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Données Soumises</title>
+    <title>Form Data</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
 </head>
 <body>
     <h1>Données Soumises</h1>
-    <a href="{{ url_for('export_data') }}">Export Data to Excel</a>
-    <br>
-    <a href="{{ url_for('logout') }}">Logout</a>
-    <br>
-    <h2>Données Soumises</h2>
-    <table border="1">
-        <tr>
-            <th>Nom</th>
-            <th>Email</th>
-            <th>Numéro de téléphone</th>
-            <th>Message</th>
-            <th>Type de soumission</th>
-            <th>Date de soumission</th>
-        </tr>
-        {% for data in form_data %}
-        <tr>
-            <td>{{ data.name }}</td>
-            <td>{{ data.email }}</td>
-            <td>{{ data.phone }}</td>
-            <td>{{ data.message }}</td>
-            <td>{{ data.submission_type }}</td>
-            <td>{{ data.submission_date }}</td>
-        </tr>
-        {% endfor %}
+    <table>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Numéro de téléphone</th>
+                <th>Message</th>
+                <th>Type de soumission</th>
+                <th>Date de soumission</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in form_data %}
+            <tr>
+                <td>{{ data.name }}</td>
+                <td>{{ data.email }}</td>
+                <td>{{ data.phone }}</td>
+                <td>{{ data.message }}</td>
+                <td>{{ data.submission_type }}</td>
+                <td>{{ data.submission_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
+    <a href="{{ url_for('export_data') }}">Export Data to Excel</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
 </body>
 </html>
