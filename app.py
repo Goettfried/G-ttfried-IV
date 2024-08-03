@@ -16,7 +16,7 @@ bcrypt = Bcrypt(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
-    password_hash = db.Column(db.String(150), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)  # Augmentez la longueur ici
 
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
