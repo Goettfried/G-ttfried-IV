@@ -8,7 +8,7 @@ import xlsxwriter
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost/yourdatabase'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://oesterreich:T48R0JhMHfLRQj3i86Tv3810txboBkOI@dpg-cqmn0so8fa8c73afbo0g-a:5432/bayern'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
