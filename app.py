@@ -93,7 +93,7 @@ def export_data():
     workbook.close()
     output.seek(0)
 
-    return send_file(output, attachment_filename='form_data.xlsx', as_attachment=True)
+    return send_file(output, download_name='form_data.xlsx', as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
