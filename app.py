@@ -2,7 +2,8 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_bcrypt import Bcrypt
+from flask_bcrypt import Bcrypt 
+from flask_cors import CORS  # Ajoutez cette ligne
 import os
 
 app = Flask(__name__)
