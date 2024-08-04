@@ -32,8 +32,12 @@
             {% endfor %}
         </tbody>
     </table>
-    <a href="{{ url_for('export_data') }}">Export Data to Excel</a><br>
-    <a href="{{ url_for('logout') }}">Logout</a><br>
+    <form action="{{ url_for('export_data') }}" method="get">
+        <button type="submit">Export Data to Excel</button>
+    </form>
+    <form action="{{ url_for('logout') }}" method="get">
+        <button type="submit">Logout</button>
+    </form>
     <form action="{{ url_for('clear_data') }}" method="post">
         <button type="submit">Effacer les Données</button>
     </form>
