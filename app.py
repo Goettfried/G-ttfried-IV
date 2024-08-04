@@ -97,5 +97,11 @@ def export_data():
 
     return send_file(output, download_name='form_data.xlsx', as_attachment=True)
 
+@app.route('/clear_data', methods=['POST'])
+def clear_data():
+    db.session.query(FormData).delete()
+    db.session.commit()
+    return redirect(url_for('index'))
+
 if __name__ == '__main__':
     app.run(debug=True)
