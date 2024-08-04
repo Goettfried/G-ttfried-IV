@@ -1,4 +1,3 @@
-# ?
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -53,7 +52,7 @@ def receive_form():
     submission_type = data.get('form_type')  # Assurez-vous que ce champ est bien envoyé
 
     if not submission_type:
-        return jsonify({'error': 'Ach so...'}), 400
+        return jsonify({'error': 'Type de soumission inconnu'}), 400
 
     form_data = FormData(
         name=name,
@@ -65,7 +64,7 @@ def receive_form():
     )
     db.session.add(form_data)
     db.session.commit()
-    return jsonify({'status': 'success', 'message': 'Au top !'}), 200
+    return jsonify({'status': 'success', 'message': 'Soumission réussie'}), 200
 
 @app.route('/export_data')
 def export_data():
