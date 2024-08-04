@@ -52,7 +52,7 @@ def receive_form():
     submission_type = data.get('form_type')  # Assurez-vous que ce champ est bien envoyé
 
     if not submission_type:
-        return jsonify({'error': 'Submission type is required'}), 400
+        return jsonify({'error': 'Ach so...'}), 400
 
     form_data = FormData(
         name=name,
@@ -64,7 +64,7 @@ def receive_form():
     )
     db.session.add(form_data)
     db.session.commit()
-    return jsonify({'message': 'Form data received successfully'}), 200
+    return jsonify({'status': 'success', 'message': 'Au top !'}), 200
 
 @app.route('/export_data')
 def export_data():
