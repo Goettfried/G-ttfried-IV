@@ -4,42 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Form Data</h1>
-    <h2>Données Soumises</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Numéro de téléphone</th>
-                <th>Message</th>
-                <th>Type de soumission</th>
-                <th>Date de soumission</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for data in form_data %}
-            <tr>
-                <td>{{ data.name }}</td>
-                <td>{{ data.email }}</td>
-                <td>{{ data.phone }}</td>
-                <td>{{ data.message }}</td>
-                <td>{{ data.submission_type }}</td>
-                <td>{{ data.submission_date }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <form action="{{ url_for('export_data') }}" method="get">
-        <button type="submit">Export Data to Excel</button>
-    </form>
-    <form action="{{ url_for('logout') }}" method="get">
-        <button type="submit">Logout</button>
-    </form>
-    <form action="{{ url_for('clear_data') }}" method="post">
-        <button type="submit">Effacer les Données</button>
-    </form>
+    <div class="container">
+        <h1>Form Data</h1>
+        <h2>Données Soumises</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Numéro de téléphone</th>
+                    <th>Message</th>
+                    <th>Type de soumission</th>
+                    <th>Date de soumission</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in form_data %}
+                <tr>
+                    <td>{{ data.name }}</td>
+                    <td>{{ data.email }}</td>
+                    <td>{{ data.phone }}</td>
+                    <td>{{ data.message }}</td>
+                    <td>{{ data.submission_type }}</td>
+                    <td>{{ data.submission_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="button-container">
+            <form action="{{ url_for('export_data') }}" method="get">
+                <button type="submit" class="btn">Exporter les Données en Excel</button>
+            </form>
+            <form action="{{ url_for('logout') }}" method="get">
+                <button type="submit" class="btn">Déconnexion</button>
+            </form>
+            <form action="{{ url_for('clear_data') }}" method="post">
+                <button type="submit" class="btn">Effacer les Données</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
