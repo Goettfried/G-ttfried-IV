@@ -1,4 +1,3 @@
-# Flaque
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
